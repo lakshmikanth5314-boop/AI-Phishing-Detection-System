@@ -1,0 +1,1611 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>AI Phishing Detection System</title>
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            min-height: 100vh;
+
+            background:
+                radial-gradient(circle at top left, #173b70, transparent 35%),
+                radial-gradient(circle at bottom right, #062e42, transparent 35%),
+                #050b16;
+
+            color: white;
+            padding: 30px 15px;
+        }
+
+        .app {
+            width: 100%;
+            max-width: 900px;
+            margin: auto;
+        }
+
+        /* ================= HEADER ================= */
+
+        .header {
+            text-align: center;
+            margin-bottom: 28px;
+        }
+
+        .shield {
+            width: 72px;
+            height: 72px;
+
+            margin: auto;
+
+            border-radius: 20px;
+
+            display: flex;
+            justify-content: center;
+            align-items: center;
+
+            font-size: 38px;
+
+            background: rgba(59, 130, 246, 0.15);
+            border: 1px solid rgba(96, 165, 250, 0.35);
+
+            box-shadow: 0 0 35px rgba(37, 99, 235, 0.25);
+        }
+
+        h1 {
+            margin-top: 18px;
+            font-size: 36px;
+        }
+
+        .subtitle {
+            margin-top: 10px;
+            color: #94a3b8;
+            font-size: 16px;
+        }
+
+        /* ================= MAIN CARD ================= */
+
+        .card {
+            background: rgba(15, 23, 42, 0.88);
+
+            border: 1px solid rgba(148, 163, 184, 0.16);
+
+            border-radius: 24px;
+
+            padding: 32px;
+
+            box-shadow: 0 25px 70px rgba(0, 0, 0, 0.4);
+
+            backdrop-filter: blur(15px);
+        }
+
+        .label {
+            display: block;
+            margin-bottom: 10px;
+
+            color: #cbd5e1;
+
+            font-weight: bold;
+        }
+
+        .input-area {
+            display: flex;
+            gap: 10px;
+        }
+
+        input {
+            flex: 1;
+
+            padding: 17px;
+
+            border-radius: 12px;
+
+            border: 1px solid #334155;
+
+            background: #020617;
+
+            color: white;
+
+            font-size: 16px;
+
+            outline: none;
+        }
+
+        input:focus {
+            border-color: #3b82f6;
+
+            box-shadow:
+                0 0 0 3px rgba(59, 130, 246, 0.12);
+        }
+
+        button {
+            border: none;
+
+            border-radius: 12px;
+
+            padding: 15px 24px;
+
+            font-size: 16px;
+
+            font-weight: bold;
+
+            cursor: pointer;
+
+            transition: 0.2s;
+        }
+
+        .scan-btn {
+            background: #2563eb;
+            color: white;
+        }
+
+        .scan-btn:hover {
+            background: #1d4ed8;
+            transform: translateY(-1px);
+        }
+
+        .clear-btn {
+            margin-top: 12px;
+
+            width: 100%;
+
+            background: #1e293b;
+
+            color: #cbd5e1;
+        }
+
+        .clear-btn:hover {
+            background: #334155;
+        }
+
+        /* ================= RESULT ================= */
+
+        #result {
+            display: none;
+
+            margin-top: 28px;
+
+            border-radius: 18px;
+
+            padding: 25px;
+        }
+
+        .safe {
+            background: rgba(22, 163, 74, 0.10);
+
+            border: 1px solid rgba(34, 197, 94, 0.5);
+        }
+
+        .danger {
+            background: rgba(220, 38, 38, 0.10);
+
+            border: 1px solid rgba(239, 68, 68, 0.5);
+        }
+
+        .warning {
+            background: rgba(234, 179, 8, 0.10);
+
+            border: 1px solid rgba(234, 179, 8, 0.5);
+        }
+
+        .result-header {
+            display: flex;
+
+            justify-content: space-between;
+
+            align-items: center;
+
+            gap: 20px;
+        }
+
+        .result-title {
+            font-size: 25px;
+
+            font-weight: bold;
+        }
+
+        .risk {
+            text-align: center;
+
+            min-width: 110px;
+        }
+
+        .risk-number {
+            font-size: 34px;
+
+            font-weight: bold;
+        }
+
+        .risk-label {
+            font-size: 12px;
+
+            color: #94a3b8;
+
+            margin-top: 3px;
+        }
+
+        .scanned-url {
+            margin-top: 18px;
+
+            padding: 13px;
+
+            background: rgba(2, 6, 23, 0.6);
+
+            border-radius: 10px;
+
+            color: #cbd5e1;
+
+            font-size: 14px;
+
+            word-break: break-all;
+        }
+
+        .section-title {
+            margin-top: 22px;
+
+            margin-bottom: 10px;
+
+            font-size: 16px;
+        }
+
+        .indicator {
+            padding: 10px 0;
+
+            color: #cbd5e1;
+
+            border-bottom:
+                1px solid rgba(148, 163, 184, 0.1);
+        }
+
+        .recommendation {
+            margin-top: 18px;
+
+            padding: 15px;
+
+            border-radius: 10px;
+
+            background: rgba(2, 6, 23, 0.5);
+
+            color: #cbd5e1;
+
+            line-height: 1.5;
+        }
+
+        /* ================= LOADING ================= */
+
+        .loading {
+            text-align: center;
+
+            color: #93c5fd;
+        }
+
+        .spinner {
+            width: 28px;
+            height: 28px;
+
+            margin: 0 auto 12px;
+
+            border: 3px solid #334155;
+
+            border-top-color: #3b82f6;
+
+            border-radius: 50%;
+
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+
+            to {
+                transform: rotate(360deg);
+            }
+
+        }
+
+        /* ================= FEATURES ================= */
+
+        .features {
+            display: grid;
+
+            grid-template-columns:
+                repeat(3, 1fr);
+
+            gap: 14px;
+
+            margin-top: 20px;
+        }
+
+        .feature {
+            padding: 18px;
+
+            border-radius: 14px;
+
+            background:
+                rgba(30, 41, 59, 0.6);
+
+            border:
+                1px solid rgba(148, 163, 184, 0.1);
+
+            text-align: center;
+        }
+
+        .feature-icon {
+            font-size: 25px;
+        }
+
+        .feature-title {
+            margin-top: 8px;
+
+            font-weight: bold;
+        }
+
+        .feature-text {
+            margin-top: 5px;
+
+            font-size: 12px;
+
+            color: #94a3b8;
+        }
+
+        /* ================= FOOTER ================= */
+
+        .footer {
+            text-align: center;
+
+            margin-top: 25px;
+
+            color: #64748b;
+
+            font-size: 12px;
+        }
+
+        /* ================= MOBILE ================= */
+
+        @media (max-width: 700px) {
+
+            h1 {
+                font-size: 28px;
+            }
+
+            .card {
+                padding: 20px;
+            }
+
+            .input-area {
+                flex-direction: column;
+            }
+
+            .features {
+                grid-template-columns: 1fr;
+            }
+
+            .result-header {
+                flex-direction: column;
+
+                align-items: flex-start;
+            }
+
+            .risk {
+                text-align: left;
+            }
+
+        }
+     /* ================= MODEL PERFORMANCE ================= */
+
+.performance-section {
+    max-width: 900px;
+    margin: 35px auto;
+    padding: 25px;
+    text-align: center;
+    background: rgba(15, 25, 45, 0.85);
+    border: 1px solid #263653;
+    border-radius: 18px;
+}
+
+.performance-section h2 {
+    margin-bottom: 22px;
+    font-size: 24px;
+    color: #ffffff;
+}
+
+.performance-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 15px;
+}
+
+.performance-card {
+    padding: 20px 10px;
+    background: #172238;
+    border: 1px solid #2d3e5c;
+    border-radius: 12px;
+}
+
+.performance-value {
+    font-size: 26px;
+    font-weight: bold;
+    color: #4ade80;
+}
+
+.performance-label {
+    margin-top: 6px;
+    font-size: 14px;
+    color: #b8c4d9;
+}
+
+.performance-info {
+    margin-top: 20px;
+    color: #94a3b8;
+    font-size: 14px;
+}
+
+@media (max-width: 700px) {
+    .performance-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}/* ==============================
+   CONFUSION MATRIX
+   ============================== */
+
+.confusion-section {
+    margin-top: 30px;
+    padding: 25px;
+    background: #111a2e;
+    border: 1px solid #263653;
+    border-radius: 16px;
+    text-align: center;
+}
+
+.confusion-section h2 {
+    margin-bottom: 20px;
+    color: #ffffff;
+}
+
+.confusion-table {
+    width: 100%;
+    max-width: 650px;
+    margin: 0 auto;
+    border-collapse: collapse;
+    overflow: hidden;
+    border-radius: 10px;
+}
+
+.confusion-table th,
+.confusion-table td {
+    padding: 14px;
+    border: 1px solid #334566;
+    text-align: center;
+}
+
+.confusion-table th {
+    background: #1b2942;
+    color: #ffffff;
+    font-weight: bold;
+}
+
+.confusion-table td {
+    background: #0d1628;
+    color: #ffffff;
+    font-size: 16px;
+}
+
+.confusion-table .correct {
+    color: #4ade80;
+    font-weight: bold;
+}
+
+.confusion-table .incorrect {
+    color: #f87171;
+    font-weight: bold;
+}
+
+.confusion-info {
+    margin-top: 15px;
+    color: #94a3b8;
+    font-size: 14px;
+}/* ==============================
+   URL FEATURE ANALYSIS
+   ============================== */
+
+.feature-section {
+    margin-top: 30px;
+    padding: 30px;
+    background: #111a2e;
+    border: 1px solid #263653;
+    border-radius: 16px;
+    text-align: center;
+}
+
+.feature-section h2 {
+    color: #ffffff;
+    margin-bottom: 10px;
+}
+
+.feature-info {
+    color: #94a3b8;
+    font-size: 14px;
+    margin-bottom: 25px;
+}
+
+.feature-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 15px;
+}
+
+.feature-card {
+    background: #18243a;
+    border: 1px solid #2b3d5d;
+    border-radius: 12px;
+    padding: 20px;
+}
+
+.feature-icon {
+    font-size: 28px;
+    margin-bottom: 8px;
+}
+
+.feature-card h3 {
+    color: #ffffff;
+    margin: 8px 0;
+}
+
+.feature-card p {
+    color: #94a3b8;
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+@media (max-width: 700px) {
+    .feature-grid {
+        grid-template-columns: 1fr;
+    }
+}
+    </style>
+
+</head>
+
+
+<body>
+
+<div class="app">
+
+    <!-- ================= HEADER ================= -->
+
+    <header class="header">
+
+        <div class="shield">
+            🛡️
+        </div>
+
+        <h1>
+            AI Phishing Detection System
+        </h1>
+
+        <p class="subtitle">
+            Intelligent URL security analysis powered by machine learning
+        </p>
+
+    </header>
+
+
+    <!-- ================= MAIN CARD ================= -->
+
+    <main class="card">
+
+        <label class="label">
+            🔗 Enter Website URL
+        </label>
+
+
+        <div class="input-area">
+
+            <input
+                type="text"
+                id="urlInput"
+                placeholder="https://example.com"
+            >
+
+            <button
+                class="scan-btn"
+                onclick="checkURL()"
+            >
+                🔍 Scan URL
+            </button>
+
+        </div>
+
+
+        <button
+            class="clear-btn"
+            onclick="clearResult()"
+        >
+            Clear
+        </button>
+
+
+        <div id="result"></div>
+
+
+        <!-- ================= FEATURES ================= -->
+
+        <div class="features">
+
+            <div class="feature">
+
+                <div class="feature-icon">
+                    🤖
+                </div>
+
+                <div class="feature-title">
+                    ML Detection
+                </div>
+
+                <div class="feature-text">
+                    Machine-learning based URL classification
+                </div>
+
+            </div>
+
+
+            <div class="feature">
+
+                <div class="feature-icon">
+                    🔎
+                </div>
+
+                <div class="feature-title">
+                    URL Analysis
+                </div>
+
+                <div class="feature-text">
+                    Multiple URL characteristics are analyzed
+                </div>
+
+            </div>
+
+
+            <div class="feature">
+
+                <div class="feature-icon">
+                    🛡️
+                </div>
+
+                <div class="feature-title">
+                    Security Advice
+                </div>
+
+                <div class="feature-text">
+                    Helps identify potentially dangerous links
+                </div>
+
+            </div>
+
+        </div>
+
+    </main>
+
+
+    <!-- ================= FOOTER ================= -->
+
+    <div class="footer">
+        AI-Powered Phishing Detection System • B.Tech Project
+    </div>
+
+</div>
+
+
+<script>
+
+/*
+========================================================
+AI PHISHING DETECTION SYSTEM
+FRONTEND LOGIC
+========================================================
+
+IMPORTANT:
+
+The frontend does NOT calculate the risk score.
+
+The backend/ML model must return:
+
+{
+    "url": "...",
+    "prediction": "Phishing",
+    "risk_score": 85,
+    "features": {...}
+}
+
+The frontend only displays that result.
+
+This prevents problems such as:
+
+LEGITIMATE WEBSITE + RISK SCORE 70
+
+because the status and score come from the same backend result.
+*/
+
+
+/* ======================================================
+   MAIN SCAN FUNCTION
+====================================================== */
+
+async function checkURL() {
+
+    const urlInput =
+        document.getElementById("urlInput");
+
+    const result =
+        document.getElementById("result");
+
+
+    const url =
+        urlInput.value.trim();
+
+
+    /* ==================================================
+       1. CHECK EMPTY URL
+    ================================================== */
+
+    if (!url) {
+
+        result.style.display = "block";
+
+        result.className = "warning";
+
+        result.innerHTML = `
+
+            <div class="result-title">
+                ⚠️ URL Required
+            </div>
+
+            <p
+                style="
+                    margin-top:10px;
+                    color:#cbd5e1;
+                "
+            >
+                Please enter a website URL before scanning.
+            </p>
+
+        `;
+
+        return;
+    }
+
+
+    /* ==================================================
+       2. SHOW LOADING
+    ================================================== */
+
+    result.style.display = "block";
+
+    result.className = "warning";
+
+
+    result.innerHTML = `
+
+        <div class="loading">
+
+            <div class="spinner"></div>
+
+            <strong>
+                Analyzing URL...
+            </strong>
+
+            <p
+                style="
+                    margin-top:6px;
+                    color:#94a3b8;
+                "
+            >
+                Extracting security features and
+                running ML detection
+            </p>
+
+        </div>
+
+    `;
+
+
+    /* ==================================================
+       3. SEND URL TO FASTAPI
+    ================================================== */
+
+    try {
+
+        const response = await fetch(
+            "http://127.0.0.1:8000/predict",
+            {
+
+                method: "POST",
+
+                headers: {
+                    "Content-Type":
+                        "application/json"
+                },
+
+                body: JSON.stringify({
+                    url: url
+                })
+
+            }
+        );
+
+
+        /* ==============================================
+           READ SERVER RESPONSE
+        ============================================== */
+
+        const data =
+            await response.json();
+
+
+        if (!response.ok) {
+
+            throw new Error(
+                data.detail ||
+                "Server error"
+            );
+
+        }
+
+
+        /* ==============================================
+           GET BACKEND VALUES
+        ============================================== */
+
+        const prediction =
+            String(
+                data.prediction || ""
+            ).trim();
+
+
+        const riskScore =
+            Number(data.risk_score);
+        const confidence =
+            Number(data.confidence);    
+
+
+        const features =
+            data.features || {};
+
+
+        /* ==============================================
+           VALIDATE BACKEND RESPONSE
+        ============================================== */
+
+        if (!prediction) {
+
+            throw new Error(
+                "Backend did not return a prediction."
+            );
+
+        }
+
+
+        if (!Number.isFinite(riskScore)) {
+
+            throw new Error(
+                "Backend did not return a valid risk_score."
+            );
+
+        }
+
+
+        /*
+        Keep the score between 0 and 100.
+
+        IMPORTANT:
+        We are NOT calculating the score here.
+
+        We are only displaying the score received
+        from the backend.
+        */
+
+        const safeRiskScore =
+            Math.max(
+                0,
+                Math.min(
+                    100,
+                    Math.round(riskScore)
+                )
+            );
+
+
+        /* ==============================================
+           DEBUG INFORMATION
+        ============================================== */
+
+        console.log(
+            "URL:",
+            data.url
+        );
+
+        console.log(
+            "ML Prediction:",
+            prediction
+        );
+
+        console.log(
+            "Risk Score from Backend:",
+            safeRiskScore
+        );
+
+        console.log(
+            "Features:",
+            features
+        );
+
+
+        /* ==================================================
+           4. SECURITY INDICATORS
+           
+           IMPORTANT:
+           These indicators are ONLY explanations.
+
+           They DO NOT modify riskScore.
+        ================================================== */
+
+        const indicators = [];
+
+
+        const scannedURL =
+            String(
+                data.url || url
+            );
+
+
+        const urlLower =
+            scannedURL.toLowerCase();
+
+
+        /* IP ADDRESS */
+
+        if (
+            features.has_ip === 1
+        ) {
+
+            indicators.push(
+                "⚠️ URL uses an IP address instead of a normal domain."
+            );
+
+        }
+
+
+        /* @ SYMBOL */
+
+        if (
+            features.at_symbol === 1
+        ) {
+
+            indicators.push(
+                "⚠️ URL contains an @ symbol."
+            );
+
+        }
+
+
+        /* LONG URL */
+
+        if (
+            features.url_length >= 75
+        ) {
+
+            indicators.push(
+                "⚠️ URL is unusually long."
+            );
+
+        }
+
+
+        /* MANY DOTS */
+
+        if (
+            features.dot_count >= 4
+        ) {
+
+            indicators.push(
+                "⚠️ URL contains multiple domain separators."
+            );
+
+        }
+
+
+        /* QUESTION MARK */
+
+        if (
+            features.question_mark === 1
+        ) {
+
+            indicators.push(
+                "⚠️ URL contains query parameters."
+            );
+
+        }
+
+
+        /* HTTPS */
+
+        if (
+            features.has_https === 0
+        ) {
+
+            indicators.push(
+                "⚠️ HTTPS is not detected."
+            );
+
+        }
+
+
+        /* ==================================================
+           SUSPICIOUS WORDS
+        ================================================== */
+
+        const suspiciousWords = [
+
+            "login",
+            "signin",
+            "verify",
+            "verification",
+            "account",
+            "secure",
+            "update",
+            "password",
+            "bank",
+            "wallet",
+            "confirm",
+            "authentication",
+            "recover"
+
+        ];
+
+
+        const foundWords =
+            suspiciousWords.filter(
+                word =>
+                    urlLower.includes(word)
+            );
+
+
+        if (
+            foundWords.length > 0
+        ) {
+
+            indicators.push(
+                "⚠️ Suspicious security-related words detected: " +
+                foundWords.join(", ")
+            );
+
+        }
+
+
+        /* ==================================================
+           MANY HYPHENS
+        ================================================== */
+
+        const hyphenCount =
+            (
+                scannedURL.match(/-/g) ||
+                []
+            ).length;
+
+
+        if (
+            hyphenCount >= 3
+        ) {
+
+            indicators.push(
+                "⚠️ URL contains many hyphens."
+            );
+
+        }
+
+
+        /* ==================================================
+           SUSPICIOUS DOMAIN STRUCTURE
+        ================================================== */
+
+        if (
+
+            urlLower.includes("login-") ||
+
+            urlLower.includes("verify-") ||
+
+            urlLower.includes("secure-") ||
+
+            urlLower.includes("account-")
+
+        ) {
+
+            indicators.push(
+                "⚠️ URL has a suspicious domain structure."
+            );
+
+        }
+
+
+        /* ==================================================
+           NO INDICATORS
+        ================================================== */
+
+        if (
+            indicators.length === 0
+        ) {
+
+            indicators.push(
+                "✅ No major suspicious URL indicators detected."
+            );
+
+        }
+
+
+        /* ==================================================
+           5. DETERMINE UI FROM BACKEND PREDICTION
+           
+           NOT FROM FRONTEND SCORE.
+        ================================================== */
+
+        const normalizedPrediction =
+            prediction.toLowerCase();
+
+
+        let resultClass =
+            "warning";
+
+
+        let title =
+            "🟡 SUSPICIOUS WEBSITE";
+
+
+        let message =
+            "The machine-learning model found a moderate phishing risk.";
+
+
+        let recommendationTitle =
+            "⚠️ Recommendation";
+
+
+        let recommendationText =
+            "Proceed carefully and avoid entering sensitive information until the website is verified.";
+
+
+        /* ==================================================
+           PHISHING
+        ================================================== */
+
+        if (
+            normalizedPrediction === "phishing"
+        ) {
+
+            resultClass =
+                "danger";
+
+
+            title =
+                "🔴 PHISHING DETECTED";
+
+
+            message =
+                "The machine-learning model classified this URL as phishing.";
+
+
+            recommendationTitle =
+                "🚨 Recommendation";
+
+
+            recommendationText =
+                "Do not enter passwords, banking information, OTPs, or other sensitive information on this website.";
+
+        }
+
+
+        /* ==================================================
+           LEGITIMATE
+        ================================================== */
+
+        else if (
+            normalizedPrediction === "legitimate"
+        ) {
+
+            resultClass =
+                "safe";
+
+
+            title =
+                "🟢 LEGITIMATE WEBSITE";
+
+
+            message =
+                "The machine-learning model classified this URL as legitimate.";
+
+
+            recommendationTitle =
+                "💡 Recommendation";
+
+
+            recommendationText =
+                "No strong phishing indicators were detected. However, always verify the website before entering sensitive information.";
+
+        }
+
+
+        /* ==================================================
+           SUSPICIOUS
+        ================================================== */
+
+        else if (
+            normalizedPrediction === "suspicious"
+        ) {
+
+            resultClass =
+                "warning";
+
+
+            title =
+                "🟡 SUSPICIOUS WEBSITE";
+
+
+            message =
+                "The machine-learning model found a moderate phishing risk.";
+
+
+            recommendationTitle =
+                "⚠️ Recommendation";
+
+
+            recommendationText =
+                "Proceed carefully and avoid entering passwords, banking information, OTPs, or other sensitive information until the website is verified.";
+
+        }
+
+
+        /* ==================================================
+           6. DISPLAY RESULT
+        ================================================== */
+
+        result.className =
+            resultClass;
+
+
+        result.innerHTML = `
+
+            <div class="result-header">
+
+                <div>
+
+                    <div class="result-title">
+
+                        ${title}
+
+                    </div>
+
+
+                    <p
+                        style="
+                            margin-top:7px;
+                            color:#cbd5e1;
+                        "
+                    >
+
+                        ${message}
+
+                    </p>
+
+                </div>
+
+
+                <div class="risk">
+
+                    <div class="risk-number">
+
+                        ${safeRiskScore}
+
+                    <div class="risk-label">
+                     RISK SCORE / 100
+                     </div>
+
+                     <div class="confidence-label">
+                     CONFIDENCE: ${confidence}%
+                     </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- SCANNED URL -->
+
+            <div class="scanned-url">
+
+                <strong>
+                    Scanned URL:
+                </strong>
+
+                <br>
+
+                ${escapeHTML(scannedURL)}
+
+            </div>
+
+
+            <!-- SECURITY ANALYSIS -->
+
+            <div class="section-title">
+
+                🔎 Security Analysis
+
+            </div>
+
+
+            ${
+
+                indicators.map(
+                    item =>
+                        `<div class="indicator">
+                            ${escapeHTML(item)}
+                        </div>`
+                ).join("")
+
+            }
+
+
+            <!-- RECOMMENDATION -->
+
+            <div class="recommendation">
+
+                <strong>
+                    ${recommendationTitle}
+                </strong>
+
+                <br><br>
+
+                ${recommendationText}
+
+            </div>
+
+        `;
+
+
+    }
+
+
+    /* ==================================================
+       ERROR HANDLING
+    ================================================== */
+
+    catch (error) {
+
+        console.error(
+            "Scan error:",
+            error
+        );
+
+
+        result.style.display =
+            "block";
+
+
+        result.className =
+            "warning";
+
+
+        result.innerHTML = `
+
+            <div class="result-title">
+
+                ⚠️ Unable to Scan
+
+            </div>
+
+
+            <p
+                style="
+                    margin-top:10px;
+                    color:#cbd5e1;
+                "
+            >
+
+                ${escapeHTML(
+                    error.message ||
+                    "An unexpected error occurred."
+                )}
+
+            </p>
+
+
+            <p
+                style="
+                    margin-top:10px;
+                    color:#94a3b8;
+                "
+            >
+
+                Make sure the FastAPI server is running
+                and try again.
+
+            </p>
+
+        `;
+
+    }
+
+}
+
+
+/* ======================================================
+   CLEAR BUTTON
+====================================================== */
+
+function clearResult() {
+
+    document
+        .getElementById("urlInput")
+        .value = "";
+
+
+    const result =
+        document.getElementById("result");
+
+
+    result.style.display =
+        "none";
+
+
+    result.className =
+        "";
+
+
+    result.innerHTML =
+        "";
+
+}
+
+
+/* ======================================================
+   HTML ESCAPE FUNCTION
+====================================================== */
+
+function escapeHTML(text) {
+
+    const div =
+        document.createElement("div");
+
+
+    div.textContent =
+        String(text ?? "");
+
+
+    return div.innerHTML;
+
+}
+
+</script>
+<!-- MODEL PERFORMANCE -->
+<div class="performance-section">
+    <h2>🤖 Model Performance</h2>
+
+    <div class="performance-grid">
+
+        <div class="performance-card">
+            <div class="performance-value">99.57%</div>
+            <div class="performance-label">Accuracy</div>
+        </div>
+
+        <div class="performance-card">
+            <div class="performance-value">99.90%</div>
+            <div class="performance-label">Precision</div>
+        </div>
+
+        <div class="performance-card">
+            <div class="performance-value">99.90%</div>
+            <div class="performance-label">Recall</div>
+        </div>
+
+        <div class="performance-card">
+            <div class="performance-value">99.90%</div>
+            <div class="performance-label">F1-Score</div>
+        </div>
+
+    </div>
+
+    <p class="performance-info">
+        Random Forest model trained on 235,795 URLs.
+    </p>
+</div>
+<!-- CONFUSION MATRIX -->
+<div class="confusion-section">
+    <h2>📊 Confusion Matrix</h2>
+
+    <table class="confusion-table">
+        <tr>
+            <th></th>
+            <th>Predicted Legitimate</th>
+            <th>Predicted Phishing</th>
+        </tr>
+
+        <tr>
+            <th>Actual Legitimate</th>
+            <td class="correct">26,938 ✅</td>
+            <td>32</td>
+        </tr>
+
+        <tr>
+            <th>Actual Phishing</th>
+            <td>173</td>
+            <td class="correct">20,016 ✅</td>
+        </tr>
+    </table>
+
+    <p class="confusion-info">
+        The model correctly classified most legitimate and phishing URLs.
+    </p>
+</div>
+<!-- ==============================
+     URL FEATURE ANALYSIS
+     ============================== -->
+
+<section class="feature-section">
+
+    <h2>🔍 URL Feature Analysis</h2>
+
+    <p class="feature-info">
+        The Random Forest model analyzes multiple characteristics of the URL
+        to identify potential phishing websites.
+    </p>
+
+    <div class="feature-grid">
+
+        <div class="feature-card">
+            <div class="feature-icon">🔗</div>
+            <h3>URL Length</h3>
+            <p>Checks the total length of the website URL.</p>
+        </div>
+
+        <div class="feature-card">
+            <div class="feature-icon">🔒</div>
+            <h3>HTTPS</h3>
+            <p>Checks whether the URL uses secure HTTPS communication.</p>
+        </div>
+
+        <div class="feature-card">
+            <div class="feature-icon">🔢</div>
+            <h3>Special Characters</h3>
+            <p>Analyzes dots, hyphens, @ symbols, slashes and other characters.</p>
+        </div>
+
+        <div class="feature-card">
+            <div class="feature-icon">🌐</div>
+            <h3>Domain Structure</h3>
+            <p>Examines the hostname and suspicious domain patterns.</p>
+        </div>
+
+        <div class="feature-card">
+            <div class="feature-icon">⚠️</div>
+            <h3>Suspicious Words</h3>
+            <p>Detects security-related words such as login, verify and update.</p>
+        </div>
+
+        <div class="feature-card">
+            <div class="feature-icon">📁</div>
+            <h3>Path Analysis</h3>
+            <p>Analyzes the URL path and query components.</p>
+        </div>
+
+    </div>
+
+</section>
+</body>
+
+</html>
