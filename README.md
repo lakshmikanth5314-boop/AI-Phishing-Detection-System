@@ -40,3 +40,34 @@ AI-Phishing-Detection-System/
 │
 ├── phishing_model.pkl
 └── .gitignore
+## ▶️ How to Run
+
+### 1. Clone the repository
+
+```bash
+git clone https://github.com/lakshmikanth5314-boop/AI-Phishing-Detection-System.git
+```
+
+### 2. Open the project folder
+
+```bash
+cd AI-Phishing-Detection-System
+```
+
+### 3. Install required packages
+
+```bash
+pip install flask pandas scikit-learn joblib
+```
+
+### 4. Run the Flask application
+
+```bash
+python backend/app/main.py
+```
+
+### 5. Open in your browser
+
+```text
+http://127.0.0.1:5000
+```
